@@ -68,6 +68,7 @@ restclient.sqlite = {
     getRequestsByLabels: 'SELECT * FROM requests WHERE uuid IN (SELECT uuid FROM labels WHERE labelName IN (placeholder) group by uuid having count(uuid) = :num) ORDER BY creationTime DESC, lastAccess DESC',
     getRequestByUUID: 'SELECT * FROM requests WHERE uuid = :uuid',
     newRequests: 'INSERT INTO requests (uuid, requestName, favorite, requestUrl, requestMethod, request, curl, tokenCurl, creationTime, lastAccess) VALUES (:uuid, :requestName, :favorite, :requestUrl, :requestMethod, :request, :curl, :tokenCurl, :creationTime, :lastAccess)',
+    updateRequest: 'UPDATE requests SET requestName = :requestName, favorite = :favorite, requestUrl = :requestUrl, requestMethod = :requestMethod, request = :request, curl = :curl, tokenCurl = :tokenCurl, lastAccess = :lastAccess WHERE uuid = :uuid',
     findRequestsByKeyword: 'SELECT * FROM requests WHERE requestName LIKE :word OR requestUrl LIKE :word ORDER BY favorite DESC, lastAccess DESC',
     findRequestsByLabels: 'SELECT * FROM requests WHERE uuid IN (SELECT uuid FROM labels WHERE labelName IN (placeholder) group by uuid having count(uuid) = :num) ORDER BY favorite DESC, lastAccess DESC',
     findRequests: 'SELECT * FROM requests ORDER BY favorite DESC, lastAccess DESC',
@@ -369,6 +370,53 @@ restclient.sqlite = {
       binding.bindByName("curl", curl);
       binding.bindByName("tokenCurl", tokenCurl);
       binding.bindByName("creationTime", creationTime);
+      binding.bindByName("lastAccess", creationTime);
+
+      params.addParams(binding);
+      stmt.bindParameters(params);
+      stmt.execute();
+
+      var stmt = restclient.sqlite.getStatement('newLabels');
+      for (var i = 0; i < labels.length; i++) {
+        var params = stmt.newBindingParamsArray();
+        var binding = params.newBindingParams();
+        binding.bindByName("labelName", labels[i]);
+        binding.bindByName("uuid", uuid);
+        params.addParams(binding);
+        stmt.bindParameters(params);
+        stmt.execute();
+      }
+    } catch (aError) {
+      restclient.error(aError);
+      return false;
+    } finally {
+      stmt.reset();
+    }
+    request.uuid = uuid;
+    request.favorite = favorite;
+    return request;
+  },
+  updateRequest: function(uuid, request, requestName, favorite, labels) {
+    var creationTime = new Date().valueOf();
+    requestName = requestName || '';
+    favorite = favorite ? 1 : 0;
+    labels = labels || [];
+    labels = _.uniq(labels);
+    var curl = restclient.curl.constructCommand(request),
+      tokenCurl = restclient.curl.constructTokenCommand(request.aps);
+    try {
+      var stmt = restclient.sqlite.getStatement('updateRequest');
+      var params = stmt.newBindingParamsArray(),
+        binding = params.newBindingParams();
+
+      binding.bindByName("uuid", uuid);
+      binding.bindByName("requestName", requestName);
+      binding.bindByName("favorite", favorite);
+      binding.bindByName("requestUrl", request.url);
+      binding.bindByName("requestMethod", request.method);
+      binding.bindByName("request", JSON.stringify(request));
+      binding.bindByName("curl", curl);
+      binding.bindByName("tokenCurl", tokenCurl);
       binding.bindByName("lastAccess", creationTime);
 
       params.addParams(binding);

@@ -241,6 +241,7 @@ restclient.main = {
     
     //For bookmark modal
     $('[name="saved-as-favorite-checkbox"]').bootstrapSwitch();
+    $('[name="updated-as-favorite-checkbox"]').bootstrapSwitch();
   },
   initHotKeys: function () {
     $('#request-button').attr('rel','tooltip').attr('title', 'hotkey: ' + restclient.main.hotkey.send);
@@ -647,9 +648,38 @@ restclient.main = {
       $('#modal-bookmark-request [name="saved-request-label"]').tagsinput('removeAll');
       $('#modal-bookmark-request [name="saved-request-label"]').tagsinput('destroy');
       $('#modal-bookmark-request [name="saved-as-favorite-checkbox"]').bootstrapSwitch('state', false);
-    }).on('shown', function(){
+    }).on('shown', function() {
       $('#modal-bookmark-request [name="saved-request-name"]').focus();
     });
+    
+    $('#modal-bookmark-update').on('show', function() {
+      var labels = restclient.sqlite.getLabels();
+      
+      if(labels !== false)
+      {
+        labels = _.keys(labels);
+        $('#modal-bookmark-update [name="updated-request-label"]').tagsinput({
+          typeahead: {
+            source: function(query) {
+              //TODO filter array string contains string
+              return labels;
+            }
+          }
+        });
+      }
+      
+      var request = restclient.main.getRequest();
+      $('#modal-bookmark-update [name="updated-curl"]').val(restclient.curl.constructCommand(request));
+      $('#modal-bookmark-update [name="updated-token-curl"]').val(restclient.curl.constructTokenCommand(request.aps));
+    }).on('hide', function() {
+      $('#modal-bookmark-update [name="updated-request-name"]').val('');
+      $('#modal-bookmark-update [name="updated-request-label"]').tagsinput('removeAll');
+      $('#modal-bookmark-update [name="updated-request-label"]').tagsinput('destroy');
+      $('#modal-bookmark-update [name="updated-as-favorite-checkbox"]').bootstrapSwitch('state', false);
+    }).on('shown', function() {
+      $('#modal-bookmark-update [name="updated-request-name"]').focus();
+    });
+
     $('#modal-oauth-view').on('shown', function () {
       var headerId = $(this).data('source-header-id'),
           text     = $('#modal-oauth-view textarea'),
@@ -2151,8 +2181,8 @@ restclient.main = {
       restclient.message.show({
         id: 'alertInvalidRequestUrl',
         type: 'error',
-        title: 'The request URL is invalidate',
-        message: 'To bookmark a request you must input a validate request URL!',
+        title: 'The request URL is invalid',
+        message: 'To bookmark a request you must input a valid request URL!',
         buttons: [
           {title: 'Okay', class: 'btn-danger', callback: function () { $('#request-url').focus().select(); $('#alertInvalidRequestUrl').alert('close');  }}
         ],

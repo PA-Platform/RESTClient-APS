@@ -376,6 +376,45 @@ Maybe add History Im-/Export later
   </div>
 </div>
 <!-- end of modal for bookmarking //-->
+<div class="modal fade hide" id="modal-bookmark-update">
+  <div class="modal-header">
+    <a class="close btnClose">×</a>
+    <h3 class="title">Update This Bookmark</h3>
+  </div>
+  <div class="modal-body">
+    <form class="form-horizontal" onsubmit="return false;">
+      <div class="control-group">
+        <label class="control-label" for="updated-request-name">Request Name</label>
+        <div class="controls">
+          <input type="text" style="width:270px" name="updated-request-name" placeholder="GET request to example.com" required data-provide="typeahead" data-items="4" data-source=""/>
+          <p class="help-block hide">Please give this request a name for future usage.</p>
+        </div>
+      </div>
+      <div class="control-group" style="display:none">
+        <label class="control-label" for="updated-request-label">Label</label>
+        <div class="controls">
+          <input type="text" class="span3" name="updated-request-label" placeholder="Add labels" required />
+          <p class="help-block hide">Please label this request.</p>
+        </div>
+      </div>
+      
+      <div class="control-group">
+        <label class="control-label" for="updated-as-favorite-checkbox">Save as favorite</label>
+        <div class="controls">
+          <input type="checkbox" name="updated-as-favorite-checkbox" data-size="small" data-on-text="Yes" data-off-text="No">
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <input type="hidden" name="bookmark-uuid">
+    <input class="btn btnOkay btn-inverse" type="button" value="Save" onclick="restclient.bookmark.updateCurrentRequest();">
+    <input class="btn btnClose" type="button" value="Cancel">
+  </div>
+</div>
+<!-- modal for updating bookmark //-->
+
+<!-- end of modal for updating bookmark //-->
 
 <!-- modal for oauth 1.0 //-->
 <div id="modal-oauth" class="modal hide fade">
@@ -774,7 +813,7 @@ Maybe add History Im-/Export later
   <a href="#" class="removeBookmark bookmark-button"><i class="fa fa-trash-o"></i></a>
   <div class="bookmark-title bookmark-details">
     <a href="#" class="favorite" data-favorite="<%= item.favorite %>"><i class="fa fa-star<% if(item.favorite == 0) { %>-o <% } %>"></i></a> 
-    <b class="requestName"><%= item.requestName %></b> <a href="#" class="restore">[Restore]</a> <a href="#" class="restoreAPS">[+APS]</a> <span class="lastAccess"><%= moment.unix(item.lastAccess / 1000).fromNow() %></span>
+    <b class="requestName"><%= item.requestName %></b> <a href="#" class="restore">[Restore]</a> <a href="#" class="restoreAPS">[+APS]</a> <a href="#" class="replace">[Replace with current Request]</a><span class="lastAccess"><%= moment.unix(item.lastAccess / 1000).fromNow() %></span>
   </div>
   <div class="bookmark-details"><span class="bookmark-label"><%= item.requestMethod %></span> <span class="bookmark-value"><%= item.requestUrl %></span></div>
   <div class="bookmark-details"><span class="bookmark-label"><%= item.request.headers.length ? 'Headers:' : 'No headers' %></span>

@@ -221,6 +221,7 @@ restclient.bookmark = {
     template.find('a.favorite').on('click', restclient.bookmark.toggleFavorite);
     template.find('.removeBookmark').on('click', restclient.bookmark.clickRemoveBookmark);
     template.find('.restore, .restoreAPS').on('click', restclient.bookmark.applyRequest);
+    template.find('.replace').on('click', restclient.bookmark.replaceRequest);
     $('.bookmark-requests').append(template);
   },
   toggleFavorite: function(e) {
@@ -244,5 +245,68 @@ restclient.bookmark = {
       restclient.bookmark.unload();
     }
     return false;
+  },
+  replaceRequest: function(){
+    var e = $(this),
+        uuid = e.parents('li').attr('data-uuid'),
+        requestOld = _.where(restclient.bookmark.cachedRequests, {uuid: uuid})[0],
+        requestNew = restclient.main.getRequest();
+    if (!restclient.helper.validateUrl(requestNew.url))
+    {
+      restclient.message.show({
+        id: 'alertInvalidRequestUrl',
+        type: 'error',
+        title: 'The request URL is invalid',
+        message: 'To bookmark a request you must input a valid request URL!',
+        buttons: [
+          {title: 'Okay', class: 'btn-danger', callback: function () { $('#request-url').focus().select(); $('#alertInvalidRequestUrl').alert('close');  }}
+        ],
+        parent: $('#request-error'),
+        exclude: true
+      });
+      return false;
+    }
+    $('#modal-bookmark-update [name=updated-request-name]').val(requestOld.requestName);
+    $('#modal-bookmark-update [name=bookmark-uuid]').val(uuid);
+    $('#modal-bookmark-update').modal('show');
+    $('#modal-bookmark-update [name=updated-as-favorite-checkbox]').bootstrapSwitch('state', requestOld.favorite);
+    return false;
+  },
+  updateCurrentRequest: function(){
+    //TODO update save CurrentRequest function
+    var requestNameEl = $('#modal-bookmark-update [name="updated-request-name"]'),
+        requestName = requestNameEl.val();
+    if (requestName == '') {
+      requestNameEl.next().text('Please give this request a name for future usage.').show();
+      requestNameEl.focus();
+      return false;
+    }
+    var labels = $('#modal-bookmark-update [name="updated-request-label"]').tagsinput('items');
+    var favorite = $('[name="updated-as-favorite-checkbox"]').bootstrapSwitch('state') ? 1 : 0;
+    var request = restclient.main.getRequest();
+    var uuid = $('[name=bookmark-uuid]').val();
+    
+    var requestId = restclient.sqlite.updateRequest(uuid, request, requestName, favorite, labels);
+    if(requestId !== false)
+    {
+      $('#modal-bookmark-update').modal('hide');
+      $('.request-menu').click();
+      restclient.bookmark.updateRequests(0);
+    }
+    else
+    {
+      var message = restclient.message.show({
+        id: 'alert-save-bookmark-failed',
+        type: 'error',
+        title: 'Cannot bookmark this request',
+        message: 'Cannot bookmark this request to local cache, something goes wrong...',
+        buttons: [
+          {title: 'Close', class: 'btn-danger', callback: function () { $('#alert-save-bookmark-failed').alert('close').remove(); }}
+        ],
+        exclude: true,
+        prepend: true,
+        parent: $('#modal-bookmark-update form')
+      });
+    }
   }
 };
