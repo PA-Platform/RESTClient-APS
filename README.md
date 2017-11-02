@@ -1,7 +1,10 @@
-# RESTClient APS
+# THIS EXTENSION IS NOW DEPRECATED
 
-RESTClient is a debugger for RESTful web services in the form of [Firefox addon](https://addons.mozilla.org/en-US/firefox/addon/9780/). **You need firefox 30+ to run this.**
+This extension is no longer supported because it will not work after Firefox 57:
 
-This specific fork adds functionality for [APS](https://dev.apsstandard.org/develop/) development. Go to [wiki on this repository](../../wiki) for more information.
+- https://blog.mozilla.org/addons/2017/02/16/the-road-to-firefox-57-compatibility-milestones/
+- https://blog.mozilla.org/addons/2017/08/10/upcoming-changes-compatibility/
 
-*Do not hesitate to submit issues to this repository if you want something changed!*
+# REPLACEMENT
+
+Please check out this repository for replacement: [RESTED APS](https://github.com/gear54rus/RESTED-APS)
